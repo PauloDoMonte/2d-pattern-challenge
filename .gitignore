@@ -1,3 +1,11 @@
+2d-pattern.json
+start-coordinate-calculated.txt
+termination-coord.txt
+test-invalid-pattern.json
+test-output.txt
+test-pattern.json
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
