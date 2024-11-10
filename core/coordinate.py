@@ -1,4 +1,6 @@
 #core/coordinate.py
+
+
 import sys
 from decimal import Decimal, getcontext
 
@@ -15,5 +17,5 @@ def load_start_coordinate(content):
 
 def format_coordinate(x, y):
     """Formats coordinate for display."""
-    formatted = f"X={Decimal(x):.0f}, Y={Decimal(y):.0f}"
+    formatted = f"X={x}, Y={y}"
     return formatted

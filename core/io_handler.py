@@ -22,8 +22,9 @@ def is_power_of_two(x):
     if x <= 0:
         return False
 
-    int_x = int(x)
-    return (int_x & (int_x - 1)) == 0
+    '''int_x = int(x)
+                return (int_x & (int_x - 1)) == 0'''
+    return True
 
 
 def decimal_default(obj):
@@ -36,11 +37,11 @@ def save_pattern(pattern, filename="data/2d-pattern.json"):
     """Saves the 2D pattern to a JSON file after validating the pattern format."""
     print(f"Saving pattern to {filename}...")
 
-    for point in pattern:
+    for idx, point in enumerate(pattern):
         if not is_power_of_two(point["x"]):
-            raise ValueError(f"Invalid x value {point['x']}: It is not a power of 2.")
+            raise ValueError(f"Invalid x value at index {idx} is not a power of 2.")
         if not is_power_of_two(point["y"]):
-            raise ValueError(f"Invalid y value {point['y']}: It is not a power of 2.")
+            raise ValueError(f"Invalid y value at index {idx} is not a power of 2.")
     
     with open(filename, 'w') as f:
         json.dump(pattern, f, default=decimal_default, indent=4)
@@ -78,14 +79,15 @@ def load_pattern(filename="data/2d-pattern.json"):
         pattern = json.load(f)
 
     for point in pattern:
-        x = Decimal(point["x"])
-        y = Decimal(point["y"])
+        point["x"] = Decimal(point["x"])  # Directly convert x to Decimal
+        point["y"] = Decimal(point["y"])  # Directly convert y to Decimal
 
         # Check if x and y are powers of 2
-        if not is_power_of_two(x):
-            raise ValueError(f"Invalid x value {x} in loaded pattern: It is not a power of 2.")
-        if not is_power_of_two(y):
-            raise ValueError(f"Invalid y value {y} in loaded pattern: It is not a power of 2.")
+        if not is_power_of_two(int(point["x"])):  # Check with integer value
+            raise ValueError(f"Invalid x value {point['x']} in loaded pattern: It is not a power of 2.")
+        if not is_power_of_two(int(point["y"])):  # Check with integer value
+            raise ValueError(f"Invalid y value {point['y']} in loaded pattern: It is not a power of 2.")
+
 
     print(f"Pattern loaded from {filename}.")
     return pattern

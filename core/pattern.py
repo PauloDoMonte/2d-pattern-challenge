@@ -7,12 +7,24 @@ MAX_POINTS = 100
 MAX_EXPONENTS = 1000  
 MAX_VALUE = Decimal(2) ** 128  
 
-def generate_pattern(max_points=MAX_POINTS):
+def generate_pattern(initial_x, initial_y, lower_bound, upper_bound, max_points=MAX_POINTS):
     """
-    Generates a 2D pattern of points using powers of 2.
+    Generates a 2D pattern of points using powers of 2, ensuring the first x stays within bounds
+    and aligns to the nearest valid power of 2 within the bounds.
     """
     pattern = []
     exponents_used = 0
+
+    if initial_x < lower_bound:
+        adjusted_x = lower_bound + (lower_bound - initial_x)
+        adjustment = find_next_power_of_2(adjusted_x, direction='up', upper_bound=upper_bound)
+        pattern.append({"x": adjustment - initial_x, "y": initial_y})
+    elif initial_x > upper_bound:
+        adjusted_x = upper_bound - (initial_x - upper_bound)
+        adjustment = find_next_power_of_2(adjusted_x, direction='down', lower_bound=lower_bound)
+        pattern.append({"x": adjustment - initial_x, "y": initial_y})
+    else:
+        pass
 
     while len(pattern) < max_points and exponents_used < MAX_EXPONENTS:
         x_exp = random.randint(0, 128)
@@ -25,56 +37,70 @@ def generate_pattern(max_points=MAX_POINTS):
 
     return pattern
 
+
+def find_next_power_of_2(value, direction, lower_bound=None, upper_bound=None):
+    """
+    Finds the nearest power of 2 relative to the given value, either upwards or downwards,
+    ensuring it stays within the specified bounds.
+    """
+    attempts = 0
+    
+    current =  Decimal(2) ** (int(value).bit_length() - 1)
+    
+    if direction == 'up':
+        if current < value: 
+            current *= 2
+    elif direction == 'down':
+        if current > value:
+            current /= 2
+    
+    while True:
+        attempts += 1
+        
+        if lower_bound is not None and current < lower_bound:
+            current *= 2
+        elif upper_bound is not None and current > upper_bound:
+            current /= 2
+        else:
+            print(f"Valid power of 2 found in {attempts} attempts.")
+            return current
+
+        if attempts > 100:
+            print(f"Exceeded attempts in finding valid power of 2.")
+            break
+
+    return current
+
+
 def apply_pattern(x, y, pattern, repetitions, lower_bound, upper_bound):
     """
     Applies the pattern for a given number of repetitions, adjusting x and y based on bounds.
     """
-    termination_reached = False
-
     for rep in range(repetitions):
         if rep % 100 == 0:
             print(f"Repetition {rep}/{repetitions}...")
+
         for point in pattern:
             x += point["x"]
             y += point["y"]
 
-            if lower_bound <= x <= upper_bound:
-                termination_reached = True
-                break
+    print(f"Termination reached")
+    return x, y
 
-        if termination_reached:
-            break
 
-        if x > upper_bound:
-            x = upper_bound
-        elif x < lower_bound:
-            x = lower_bound
-
-    return x, y if termination_reached else (x, y)
-
-def reverse_pattern(x, y, pattern, repetitions, lower_bound, upper_bound):
+def reverse_pattern(x, y, pattern, repetitions):
     """
     Reverses the pattern to compute the starting coordinates.
     """
     print(f"Starting reverse pattern calculation from termination coordinates...")
     
     for rep in range(repetitions):
-        print(f"Repetition {rep + 1}/{repetitions}...")
+        if rep % 100 == 0:
+            print(f"Repetition {rep}/{repetitions}...")
         
-        for i, point in enumerate(reversed(pattern)):
-            # Convert point["x"] and point["y"] to Decimal if they are still strings
-            point_x = Decimal(point["x"]) if isinstance(point["x"], str) else point["x"]
-            point_y = Decimal(point["y"]) if isinstance(point["y"], str) else point["y"]
-
-            x -= point_x
-            y -= point_y
-
-            if x > upper_bound:
-                print(f"Adjusting x back from upper bound")
-                x = upper_bound
-            elif x < lower_bound:
-                print(f"Adjusting x back from lower bound")
-                x = lower_bound
+        for point in reversed(pattern):
+            x -= point["x"]
+            y -= point["y"]
 
     print(f"Reversed pattern complete. Starting coordinates")
     return x, y
