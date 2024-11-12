@@ -7,25 +7,10 @@ MAX_EXPONENTS = 500
 def generate_pattern(initial_x, initial_y, lower_bound, upper_bound, max_points=MAX_POINTS):
     """
     Generates a 2D pattern of points using powers of 2, ensuring the first x stays within bounds
-    and aligns to the nearest valid power of 2 within the bounds. The first adjustment point is saved in a file.
+    and aligns to the nearest valid power of 2 within the bounds.
     """
     pattern = []
     exponents_used = 0
-
-    if initial_x < lower_bound:
-        adjusted_x = lower_bound + (lower_bound - initial_x)
-        adjustment = find_next_power_of_2(adjusted_x, direction='up', upper_bound=upper_bound)
-        with open("data/nivelate.txt", "w") as file:
-            file.write(f"{adjustment - initial_x}\n")
-
-    elif initial_x > upper_bound:
-        adjusted_x = abs(upper_bound - (initial_x - upper_bound))
-        adjustment = find_next_power_of_2(adjusted_x, direction='down', lower_bound=lower_bound)
-        with open("data/nivelate.txt", "w") as file:
-            file.write(f"{adjustment - initial_x}\n")
-            
-    else:
-        pass
 
     while len(pattern) < max_points and exponents_used < MAX_EXPONENTS:
         x_exp = random.randint(0, 128)
@@ -38,48 +23,56 @@ def generate_pattern(initial_x, initial_y, lower_bound, upper_bound, max_points=
 
     return pattern
 
-
 def apply_pattern(x, y, pattern, repetitions, lower_bound, upper_bound):
     """
     Applies the pattern for a given number of repetitions, adjusting x and y based on bounds.
     """
-    with open("data/nivelate.txt", "r") as file:
-        first_adjustment = Decimal(file.readline().strip())
+    x0, y0 = x, y
+    adjustment_difference = 0
 
-    x += first_adjustment
+    if x < lower_bound:
+        adjusted_x = lower_bound
+        x = find_next_power_of_2(adjusted_x, direction='up', upper_bound=upper_bound)
+        adjustment_difference = x - x0
+    elif x > upper_bound:
+        adjusted_x = upper_bound
+        x = find_next_power_of_2(adjusted_x, direction='down', lower_bound=lower_bound)
+        adjustment_difference = x - x0
+
     for rep in range(repetitions):
-        if rep % 100 == 0:
-            print(f"Repetition {rep}/{repetitions}...")
-
         for point in pattern:
             x += point["x"]
             y += point["y"]
 
-    print(f"Termination reached")
-    return x, y
+    return adjustment_difference, y0, x, y
 
-
-def reverse_pattern(x, y, pattern, repetitions):
+def reverse_pattern(x, y, pattern, repetitions, lower_bound, upper_bound):
     """
-    Reverses the pattern to compute the starting coordinates.
+    Reverses the pattern to compute the starting coordinates, adjusting based on termination-coord.txt.
     """
-    print(f"Starting reverse pattern calculation from termination coordinates...")
+    try:
+        with open('data/termination-coord.txt', 'r') as file:
+            lines = file.readlines()
+            coord_line = lines[0].strip()
     
-    with open("data/nivelate.txt", "r") as file:
-        first_adjustment = Decimal(file.readline().strip())
+            x0 = Decimal(coord_line.split(',')[0].split('=')[1].strip())
+            y0 = Decimal(coord_line.split(',')[1].split('=')[1].strip())
+    except FileNotFoundError:
+        x0, y0 = x, y
 
-    x -= first_adjustment
+    adjustment_difference = x0
+
     for rep in range(repetitions):
-        if rep % 100 == 0:
-            print(f"Repetition {rep}/{repetitions}...")
-        
         for point in reversed(pattern):
             x -= point["x"]
             y -= point["y"]
 
-    print(f"Reversed pattern complete. Starting coordinates")
-    return x, y
+    if x == upper_bound:
+        x = x - adjustment_difference
+    elif x == lower_bound:
+        x = x + adjustment_difference
 
+    return x, y
 
 def is_power_of_two(x):
     """Checks if the value is a power of 2."""
@@ -88,14 +81,12 @@ def is_power_of_two(x):
     int_x = int(x)
     return (int_x & (int_x - 1)) == 0
 
-
 def find_next_power_of_2(value, direction, lower_bound=None, upper_bound=None):
     """
     Finds the nearest power of 2 relative to the given value, either upwards or downwards,
     ensuring it stays within the specified bounds.
     """
     attempts = 0
-
     value = Decimal(value)
     
     if value <= 0:
@@ -121,13 +112,11 @@ def find_next_power_of_2(value, direction, lower_bound=None, upper_bound=None):
             current /= 2
         else:
             if not is_power_of_two(current):
-                print(f"Warning: The found value {current} is not a valid power of 2.")
+                pass
             else:
-                print(f"Valid power of 2 found in {attempts} attempts")
                 return current
 
-        if attempts > 10000:
-            print("Exceeded maximum attempts.")
+        if attempts > 1000:
             break
 
     return current

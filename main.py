@@ -1,10 +1,10 @@
 import sys
 import os
 from core.pattern import generate_pattern, apply_pattern, reverse_pattern
-from core.coordinate import load_start_coordinate, format_coordinate
+from core.coordinate import load_start_coordinate, load_start_coordinate_, format_coordinate, format_coordinate_
 from core.io_handler import read_file, write_file, save_pattern, load_pattern, load_green_lines
 
-CONST_REPETITIONS = 10000
+CONST_REPETITIONS = 1000
 
 DATA_DIR = "data/"
 START_COORD_FILE = os.path.join(DATA_DIR, "start-coordinate.txt")
@@ -42,12 +42,13 @@ def run_goal_2(repetitions=CONST_REPETITIONS):
     validate_file_exists(TERMINATION_FILE)
     validate_file_exists(PATTERN_FILE)
 
-    termination_coord = load_start_coordinate(read_file(TERMINATION_FILE))
+    termination_coord = load_start_coordinate_(read_file(TERMINATION_FILE))
     pattern = load_pattern(PATTERN_FILE)
 
-    start_coord = reverse_pattern(*termination_coord, pattern, repetitions)
+    lower_bound, upper_bound = load_green_lines(read_file(GREEN_LINES_FILE))
+    start_coord = reverse_pattern(*termination_coord, pattern, repetitions, lower_bound, upper_bound)
 
-    write_file(CALCULATED_START_FILE, format_coordinate(*start_coord))
+    write_file(CALCULATED_START_FILE, format_coordinate_(*start_coord))
     print("Goal 2 completed: Start coordinate saved to 'start-coordinate-calculated.txt'.")
 
 
