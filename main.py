@@ -4,7 +4,7 @@ from core.pattern import generate_pattern, apply_pattern, reverse_pattern
 from core.coordinate import load_start_coordinate, format_coordinate
 from core.io_handler import read_file, write_file, save_pattern, load_pattern, load_green_lines
 
-CONST_REPETITIONS = 1000
+CONST_REPETITIONS = 10000
 
 DATA_DIR = "data/"
 START_COORD_FILE = os.path.join(DATA_DIR, "start-coordinate.txt")
