@@ -21,10 +21,12 @@ def write_file(filename, content):
 def is_power_of_two(x):
     if x <= 0:
         return False
-
-    '''int_x = int(x)
-                return (int_x & (int_x - 1)) == 0'''
-    return True
+    
+    d = Decimal(x)
+    while d % 2 == 0:
+        d /= 2
+    
+    return d == 1    
 
 
 def decimal_default(obj):
