@@ -3,7 +3,7 @@ import os
 from core.pattern import generate_pattern, apply_pattern, reverse_pattern
 from core.coordinate import load_start_coordinate, format_coordinate, load_start_termination
 from core.io_handler import read_file, write_file, save_pattern, load_pattern, load_green_lines
-from core.io_handler import save_root_diff, load_root_diff, write_file_termination
+from core.io_handler import write_file_termination
 
 CONST_REPETITIONS = 1000
 
@@ -30,10 +30,9 @@ def run_goal_1(repetitions=CONST_REPETITIONS):
     lower_bound, upper_bound = load_green_lines(read_file(GREEN_LINES_FILE))
 
     pattern = generate_pattern(lower_bound, upper_bound)
-    x, y, root_diff = apply_pattern(*start_coord, pattern, repetitions, lower_bound, upper_bound)
+    x, y = apply_pattern(*start_coord, pattern, repetitions, lower_bound, upper_bound)
 
     save_pattern(pattern, PATTERN_FILE)
-    save_root_diff(root_diff)
     write_file_termination(TERMINATION_FILE, (x, y))
 
     print("Goal 1 completed: Termination coordinate saved to 'termination-coord.txt'.")
@@ -46,10 +45,9 @@ def run_goal_2(repetitions=CONST_REPETITIONS):
 
     termination_coord = load_start_termination(TERMINATION_FILE)
     pattern = load_pattern(PATTERN_FILE)
-    root_diff = load_root_diff()
 
     lower_bound, upper_bound = load_green_lines(read_file(GREEN_LINES_FILE))
-    start_coord = reverse_pattern(*termination_coord, pattern, repetitions, lower_bound, upper_bound, root_diff)
+    start_coord = reverse_pattern(*termination_coord, pattern, repetitions, lower_bound, upper_bound)
 
     write_file(CALCULATED_START_FILE, format_coordinate(*start_coord))
     print("Goal 2 completed: Start coordinate saved to 'start-coordinate-calculated.txt'.")

@@ -1,13 +1,12 @@
 import random
 from decimal import Decimal
 
-MAX_POINTS = 1000
+MAX_POINTS = 5000
 MAX_EXPONENTS = 500
 
 def generate_pattern(lower_bound, upper_bound, max_points=MAX_POINTS):
     """
-    Generates a 2D pattern of points using powers of 2, ensuring the first x stays within bounds
-    and aligns to the nearest valid power of 2 within the bounds.
+    Generates a 2D pattern of points using powers of 2.
     """
     pattern = []
     exponents_used = 0
@@ -26,79 +25,58 @@ def generate_pattern(lower_bound, upper_bound, max_points=MAX_POINTS):
 def apply_pattern(x, y, pattern, repetitions, lower_bound, upper_bound):
     """
     Applies the 2D pattern to the coordinates (x, y) for a given number of repetitions.
+    Adjusts direction based on whether x is above or below the bounds, and stops when a limit is reached.
     """
     print("Starting apply_pattern...")
-    x0, y0 = x, y
 
-    adjusted_x, root_diff = find_next_power_of_2(x, lower_bound, upper_bound, direction='down')
-    x = adjusted_x
-    
+    direction = 'down'
+
+    if x > upper_bound:
+        direction = 'down'
+        
+    elif x < lower_bound:
+        direction = 'up'
+
     for rep in range(repetitions):
         for point in pattern:
-            x += point["x"]
-            y += point["y"]
+            if x == lower_bound or x == upper_bound:
+                print(f"Limit reached: x, stopping pattern application.")
+                return x, y
+
+            if direction == 'down':
+                x -= point["x"]
+                y -= point["y"]
+            elif direction == 'up':
+                x += point["x"]
+                y += point["y"]
 
     print("apply_pattern finished.")
-    return x, y, root_diff
+    return x, y
 
-def reverse_pattern(x, y, pattern, repetitions, lower_bound, upper_bound, root_diff):
+def reverse_pattern(x, y, pattern, repetitions, lower_bound, upper_bound):
     """
     Reverses the application of the 2D pattern to the coordinates (x, y).
+    Adjusts based on whether x is closer to the upper bound or lower bound:
+    - If closer to the upper bound, apply 'up' direction (move back).
+    - If closer to the lower bound, apply 'down' direction (move back).
     """
     print("Starting reverse_pattern...")
+
+    if abs(x - upper_bound) < abs(x - lower_bound):
+        direction = 'up'
+        print(f"x is closer to upper bound, moving 'up'.")
+    else:
+        direction = 'down'
+        print(f"x is closer to lower bound, moving 'down'.")
+
     for rep in range(repetitions):
         for point in reversed(pattern):
-            x -= point["x"]
-            y -= point["y"]
-
-    x = reverse_to_original(x, lower_bound, upper_bound, root_diff)
+            if direction == 'up':
+                x += point["x"]
+                y += point["y"]
+            elif direction == 'down':
+                x -= point["x"]
+                y -= point["y"]
 
     print("reverse_pattern finished.")
     return x, y
-
-def is_power_of_two(x):
-    """
-    Checks if the value is a power of 2.
-    """
-    if x <= 0:
-        return False
-    int_x = int(x)
-    return (int_x & (int_x - 1)) == 0
-
-def find_next_power_of_2(x, lower_bound, upper_bound, direction='up'):
-    """
-    Adjusts x to the nearest power of 2 within the bounds.
-    """
-    x_int = int(x)
-
-    if direction == 'up':
-        next_power = 1 << x_int.bit_length()
-    elif direction == 'down':
-        next_power = 1 << (x_int.bit_length() - 1)
-    elif direction == 'nearest':
-        next_power_up = 1 << x_int.bit_length()
-        next_power_down = 1 << (x_int.bit_length() - 1)
-
-        if abs(next_power_up - x) < abs(next_power_down - x):
-            next_power = next_power_up
-        else:
-            next_power = next_power_down
-    else:
-        raise ValueError("Direction must be 'up', 'down', or 'nearest'.")
-
-    root_diff = abs(next_power - x)
-
-    return next_power, root_diff
-
-def reverse_to_original(x, lower_bound, upper_bound, root_diff):
-    """
-    Reverses the adjustment of x by the root_diff to restore the original value.
-    """
-    print("Starting reverse_to_original...")
-    if x > lower_bound:
-        x += root_diff
-    else:
-        x -= root_diff
-
-    print("reverse_to_original finished.")
-    return x
