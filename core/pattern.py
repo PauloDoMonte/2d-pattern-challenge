@@ -4,7 +4,7 @@ from decimal import Decimal
 MAX_POINTS = 1000
 MAX_EXPONENTS = 500
 
-def generate_pattern(initial_x, initial_y, lower_bound, upper_bound, max_points=MAX_POINTS):
+def generate_pattern(lower_bound, upper_bound, max_points=MAX_POINTS):
     """
     Generates a 2D pattern of points using powers of 2, ensuring the first x stays within bounds
     and aligns to the nearest valid power of 2 within the bounds.
@@ -25,98 +25,80 @@ def generate_pattern(initial_x, initial_y, lower_bound, upper_bound, max_points=
 
 def apply_pattern(x, y, pattern, repetitions, lower_bound, upper_bound):
     """
-    Applies the pattern for a given number of repetitions, adjusting x and y based on bounds.
+    Applies the 2D pattern to the coordinates (x, y) for a given number of repetitions.
     """
+    print("Starting apply_pattern...")
     x0, y0 = x, y
-    adjustment_difference = 0
 
-    if x < lower_bound:
-        adjusted_x = lower_bound
-        x = find_next_power_of_2(adjusted_x, direction='up', upper_bound=upper_bound)
-        adjustment_difference = x - x0
-    elif x > upper_bound:
-        adjusted_x = upper_bound
-        x = find_next_power_of_2(adjusted_x, direction='down', lower_bound=lower_bound)
-        adjustment_difference = x - x0
-
+    adjusted_x, root_diff = find_next_power_of_2(x, lower_bound, upper_bound, direction='down')
+    x = adjusted_x
+    
     for rep in range(repetitions):
         for point in pattern:
             x += point["x"]
             y += point["y"]
 
-    return adjustment_difference, y0, x, y
+    print("apply_pattern finished.")
+    return x, y, root_diff
 
-def reverse_pattern(x, y, pattern, repetitions, lower_bound, upper_bound):
+def reverse_pattern(x, y, pattern, repetitions, lower_bound, upper_bound, root_diff):
     """
-    Reverses the pattern to compute the starting coordinates, adjusting based on termination-coord.txt.
+    Reverses the application of the 2D pattern to the coordinates (x, y).
     """
-    try:
-        with open('data/termination-coord.txt', 'r') as file:
-            lines = file.readlines()
-            coord_line = lines[0].strip()
-    
-            x0 = Decimal(coord_line.split(',')[0].split('=')[1].strip())
-            y0 = Decimal(coord_line.split(',')[1].split('=')[1].strip())
-    except FileNotFoundError:
-        x0, y0 = x, y
-
-    adjustment_difference = x0
-
+    print("Starting reverse_pattern...")
     for rep in range(repetitions):
         for point in reversed(pattern):
             x -= point["x"]
             y -= point["y"]
 
-    if x == upper_bound:
-        x = x - adjustment_difference
-    elif x == lower_bound:
-        x = x + adjustment_difference
+    x = reverse_to_original(x, lower_bound, upper_bound, root_diff)
 
+    print("reverse_pattern finished.")
     return x, y
 
 def is_power_of_two(x):
-    """Checks if the value is a power of 2."""
+    """
+    Checks if the value is a power of 2.
+    """
     if x <= 0:
         return False
     int_x = int(x)
     return (int_x & (int_x - 1)) == 0
 
-def find_next_power_of_2(value, direction, lower_bound=None, upper_bound=None):
+def find_next_power_of_2(x, lower_bound, upper_bound, direction='up'):
     """
-    Finds the nearest power of 2 relative to the given value, either upwards or downwards,
-    ensuring it stays within the specified bounds.
+    Adjusts x to the nearest power of 2 within the bounds.
     """
-    attempts = 0
-    value = Decimal(value)
-    
-    if value <= 0:
-        raise ValueError("Value must be greater than 0.")
-
-    int_value = int(value.to_integral_value(rounding='ROUND_FLOOR'))
+    x_int = int(x)
 
     if direction == 'up':
-        next_power = 1 << int_value.bit_length()
+        next_power = 1 << x_int.bit_length()
     elif direction == 'down':
-        next_power = 1 << (int_value.bit_length() - 1)
-    else:
-        raise ValueError("Direction must be 'up' or 'down'.")
+        next_power = 1 << (x_int.bit_length() - 1)
+    elif direction == 'nearest':
+        next_power_up = 1 << x_int.bit_length()
+        next_power_down = 1 << (x_int.bit_length() - 1)
 
-    current = Decimal(next_power)
-
-    while True:
-        attempts += 1
-
-        if lower_bound is not None and current < lower_bound:
-            current *= 2
-        elif upper_bound is not None and current > upper_bound:
-            current /= 2
+        if abs(next_power_up - x) < abs(next_power_down - x):
+            next_power = next_power_up
         else:
-            if not is_power_of_two(current):
-                pass
-            else:
-                return current
+            next_power = next_power_down
+    else:
+        raise ValueError("Direction must be 'up', 'down', or 'nearest'.")
 
-        if attempts > 1000:
-            break
+    root_diff = abs(next_power - x)
 
-    return current
+    return next_power, root_diff
+
+def reverse_to_original(x, lower_bound, upper_bound, root_diff):
+    """
+    Reverses the adjustment of x by the root_diff to restore the original value.
+    """
+    print("Starting reverse_to_original...")
+    if x > lower_bound:
+        x += root_diff
+    else:
+        x -= root_diff
+
+    print("reverse_to_original finished.")
+    return x

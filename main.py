@@ -1,8 +1,9 @@
 import sys
 import os
 from core.pattern import generate_pattern, apply_pattern, reverse_pattern
-from core.coordinate import load_start_coordinate, load_start_coordinate_, format_coordinate, format_coordinate_
+from core.coordinate import load_start_coordinate, format_coordinate, load_start_termination
 from core.io_handler import read_file, write_file, save_pattern, load_pattern, load_green_lines
+from core.io_handler import save_root_diff, load_root_diff, write_file_termination
 
 CONST_REPETITIONS = 1000
 
@@ -28,11 +29,12 @@ def run_goal_1(repetitions=CONST_REPETITIONS):
     start_coord = load_start_coordinate(read_file(START_COORD_FILE))
     lower_bound, upper_bound = load_green_lines(read_file(GREEN_LINES_FILE))
 
-    pattern = generate_pattern(*start_coord, lower_bound, upper_bound)
-    termination_coord = apply_pattern(*start_coord, pattern, repetitions, lower_bound, upper_bound)
+    pattern = generate_pattern(lower_bound, upper_bound)
+    x, y, root_diff = apply_pattern(*start_coord, pattern, repetitions, lower_bound, upper_bound)
 
     save_pattern(pattern, PATTERN_FILE)
-    write_file(TERMINATION_FILE, format_coordinate(*termination_coord))
+    save_root_diff(root_diff)
+    write_file_termination(TERMINATION_FILE, (x, y))
 
     print("Goal 1 completed: Termination coordinate saved to 'termination-coord.txt'.")
 
@@ -42,13 +44,14 @@ def run_goal_2(repetitions=CONST_REPETITIONS):
     validate_file_exists(TERMINATION_FILE)
     validate_file_exists(PATTERN_FILE)
 
-    termination_coord = load_start_coordinate_(read_file(TERMINATION_FILE))
+    termination_coord = load_start_termination(TERMINATION_FILE)
     pattern = load_pattern(PATTERN_FILE)
+    root_diff = load_root_diff()
 
     lower_bound, upper_bound = load_green_lines(read_file(GREEN_LINES_FILE))
-    start_coord = reverse_pattern(*termination_coord, pattern, repetitions, lower_bound, upper_bound)
+    start_coord = reverse_pattern(*termination_coord, pattern, repetitions, lower_bound, upper_bound, root_diff)
 
-    write_file(CALCULATED_START_FILE, format_coordinate_(*start_coord))
+    write_file(CALCULATED_START_FILE, format_coordinate(*start_coord))
     print("Goal 2 completed: Start coordinate saved to 'start-coordinate-calculated.txt'.")
 
 
