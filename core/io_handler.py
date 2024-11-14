@@ -1,7 +1,7 @@
 import json, math
 from decimal import Decimal, getcontext
 
-getcontext().prec = 1000000
+getcontext().prec = 100000000
 
 
 def read_file(filename):
@@ -17,25 +17,12 @@ def write_file(filename, content):
         f.write(content)
 
 def write_file_termination(filename, content):
-    """Writes content to a file."""
+    """Writes content to a file in the format 2^N."""
     with open(filename, 'w') as f:
-        # Escreve o número em notação científica com 3 casas decimais
         x, y = content
-        f.write(f"X={x:.3E}, Y={y}\n")
         
-        # Escreve o número por extenso
-        f.write(f"X={x}, Y={y}\n")
-
-def decimal_default(obj):
-    if isinstance(obj, Decimal):
-        return str(obj)  
-    raise TypeError(f"Type {obj.__class__.__name__} not serializable")
-
-
-def evaluate_power_of_two(expression):
-    """Evaluates a string expression like '2^N' and returns the corresponding value."""
-    base, exponent = expression.split('^')
-    return Decimal(2) ** int(exponent)
+        # Write the numbers as 2^N format
+        f.write(f"X=2^{x}, Y=2^{y}\n")
 
 
 def load_green_lines(content):
@@ -44,30 +31,43 @@ def load_green_lines(content):
 
     lower_expr = lines[0].split('=')[1].strip()
     upper_expr = lines[1].split('=')[1].strip()
-    
-    lower_value = evaluate_power_of_two(lower_expr)
-    upper_value = evaluate_power_of_two(upper_expr)
 
-    return lower_value, upper_value
+    return lower_expr, upper_expr
+
 
 def save_pattern(pattern, filename="data/2d-pattern.json"):
-    """Saves the 2D pattern to a JSON file."""
+    """Saves the 2D pattern to a JSON file as '2^x_exp' format."""
+    pattern_with_powers = []
+
+    for point in pattern:
+        # Converting the exponents to '2^x_exp' and '2^y_exp'
+        pattern_with_powers.append({
+            "x": f"2^{point['x']}",
+            "y": f"2^{point['y']}"
+        })
+
+    # Save the pattern to JSON
     with open(filename, 'w') as f:
-        json.dump(pattern, f, default=decimal_default, indent=4)
+        json.dump(pattern_with_powers, f, indent=4)
 
 
 def load_pattern(filename="data/2d-pattern.json"):
-    """Loads the 2D pattern from a JSON file."""
+    """Loads the 2D pattern from a JSON file and extracts the exponents."""
     try:
         with open(filename, 'r') as f:
             pattern = json.load(f)
-        
+
         filtered_pattern = []
         for point in pattern:
             if "x" in point and "y" in point:
-                point["x"] = Decimal(point["x"])
-                point["y"] = Decimal(point["y"])
-                filtered_pattern.append(point)
+                # Extracting the exponent from the string '2^x_exp' and '2^y_exp'
+                x_exp = int(point["x"].split('^')[1])  # Get the exponent after '2^'
+                y_exp = int(point["y"].split('^')[1])
+
+                filtered_pattern.append({
+                    "x": x_exp,
+                    "y": y_exp
+                })
 
         return filtered_pattern
 
@@ -75,4 +75,3 @@ def load_pattern(filename="data/2d-pattern.json"):
         return []
     except json.JSONDecodeError:
         return []
-

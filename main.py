@@ -5,7 +5,7 @@ from core.coordinate import load_start_coordinate, format_coordinate, load_start
 from core.io_handler import read_file, write_file, save_pattern, load_pattern, load_green_lines
 from core.io_handler import write_file_termination
 
-CONST_REPETITIONS = 1000
+CONST_REPETITIONS = 100
 
 DATA_DIR = "data/"
 START_COORD_FILE = os.path.join(DATA_DIR, "start-coordinate.txt")
@@ -20,7 +20,6 @@ def validate_file_exists(file_path):
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"Error: File '{file_path}' does not exist.")
 
-
 def run_goal_1(repetitions=CONST_REPETITIONS):
     """Generate termination coordinate and pattern for Goal 1."""
     validate_file_exists(START_COORD_FILE)
@@ -29,13 +28,31 @@ def run_goal_1(repetitions=CONST_REPETITIONS):
     start_coord = load_start_coordinate(read_file(START_COORD_FILE))
     lower_bound, upper_bound = load_green_lines(read_file(GREEN_LINES_FILE))
 
-    pattern = generate_pattern(lower_bound, upper_bound)
-    x, y = apply_pattern(*start_coord, pattern, repetitions, lower_bound, upper_bound)
+    # Função recursiva para aplicar o padrão até alcançar o limite
+    def recursive_apply_pattern(start_coord, pattern, repetitions, lower_bound, upper_bound):
+        result = apply_pattern(*start_coord, pattern, repetitions, lower_bound, upper_bound)
 
+        # Verifica se o resultado foi None (falha na aplicação do padrão)
+        if result is None:
+            print("Pattern did not reach target, generating a new pattern and retrying.")
+            pattern = generate_pattern()
+            return recursive_apply_pattern(start_coord, pattern, repetitions, lower_bound, upper_bound)
+
+        # Caso contrário, retorna o resultado válido
+        return result
+
+    # Geração do padrão inicial
+    pattern = generate_pattern()
+
+    # Aplicação do padrão recursivamente até atingir o objetivo
+    x, y = recursive_apply_pattern(start_coord, pattern, repetitions, lower_bound, upper_bound)
+
+    # Salva o padrão e as coordenadas de término
     save_pattern(pattern, PATTERN_FILE)
     write_file_termination(TERMINATION_FILE, (x, y))
 
     print("Goal 1 completed: Termination coordinate saved to 'termination-coord.txt'.")
+
 
 
 def run_goal_2(repetitions=CONST_REPETITIONS):

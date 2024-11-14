@@ -28,17 +28,20 @@ def load_start_termination(filename):
         lines = f.readlines()
 
     # Pega a segunda linha do arquivo, que contém os números por extenso
-    coord_line = lines[1].strip()
+    coord_line = lines[0].strip()
 
-    # Extrai os valores de X e Y, que estão no formato "X=valor, Y=valor"
-    x = Decimal(coord_line.split(',')[0].split('=')[1].strip())
-    y = Decimal(coord_line.split(',')[1].split('=')[1].strip())
+    x_str = coord_line.split(',')[0].split('=')[1].strip() 
+    y_str = coord_line.split(',')[1].split('=')[1].strip() 
+    
+    x_exp = int(x_str.split('^')[1]) 
+    y_exp = int(y_str.split('^')[1])
 
-    return x, y
+    return x_exp, y_exp
+
 
 
 def format_coordinate(x, y):
     """Formats coordinate for display."""
-    formatted = f"X={x}, Y={y}"
+    formatted = f"X=2^{x}, Y=2^{y}"
     return formatted
 
