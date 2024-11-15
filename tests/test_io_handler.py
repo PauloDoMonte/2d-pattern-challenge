@@ -30,7 +30,6 @@ class IOHandlerTests(unittest.TestCase):
         valid_pattern = [{"x": 2, "y": 4}, {"x": 8, "y": 16}]
         with open('data/test-pattern.json', 'w') as f:
             json.dump(valid_pattern, f)
-
         loaded_pattern = load_pattern('data/test-pattern.json')
         self.assertEqual(loaded_pattern, valid_pattern)
 
@@ -38,7 +37,6 @@ class IOHandlerTests(unittest.TestCase):
         invalid_pattern = [{"x": 3, "y": 4}, {"x": 8, "y": 5}]
         with open('data/test-invalid-pattern.json', 'w') as f:
             json.dump(invalid_pattern, f)
-
         with self.assertRaises(ValueError):
             load_pattern('data/test-invalid-pattern.json')
 

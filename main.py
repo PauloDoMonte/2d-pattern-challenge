@@ -64,7 +64,7 @@ def run_goal_2(repetitions=CONST_REPETITIONS):
     pattern = load_pattern(PATTERN_FILE)
 
     lower_bound, upper_bound = load_green_lines(read_file(GREEN_LINES_FILE))
-    start_coord = reverse_pattern(*termination_coord, pattern, repetitions, lower_bound, upper_bound)
+    start_coord = reverse_pattern(*termination_coord, pattern, repetitions)
 
     write_file(CALCULATED_START_FILE, format_coordinate(*start_coord))
     print("Goal 2 completed: Start coordinate saved to 'start-coordinate-calculated.txt'.")
