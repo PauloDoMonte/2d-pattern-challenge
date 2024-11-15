@@ -22,7 +22,7 @@ def generate_pattern(max_points=MAX_POINTS):
 def apply_pattern(x, y, pattern, repetitions, lower_bound, upper_bound, tolerance=TOLERANCE):
     x_exp = int(x.logb()) if hasattr(x, 'logb') else x
     y_exp = int(y.logb()) if hasattr(y, 'logb') else y
-    print(f"Starting pattern application with coordinates: x: 2^{x_exp}, y: 2^{y_exp}")
+    print(f"Starting pattern application")
 
     try:
         lower_exp = int(lower_bound.split('^')[1])
