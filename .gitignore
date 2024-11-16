@@ -5,6 +5,7 @@ test-invalid-pattern.json
 test-output.txt
 test-pattern.json
 
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
