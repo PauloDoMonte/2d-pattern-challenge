@@ -16,7 +16,7 @@ CALCULATED_START_FILE = os.path.join(DATA_DIR, "start-coordinate-calculated.txt"
 
 
 def validate_file_exists(file_path):
-    """Check if the file exists."""
+    """Check if the file exists"""
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"Error: File '{file_path}' does not exist.")
 
